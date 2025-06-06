@@ -67,11 +67,24 @@ inverters.
 In addition to the report, you can also view the plotted output by selecting the -PlotType parameter.  Here is an example:
 ![Plot](Example.png)
 As you can see, this particular panel is shaded in the early morning, but it comes on strong with a estimated peak power of
-373W (its a 430W STC/327W NMOT panel and I'm in the SFBay area).  I lose <1% due to shaving.  After two passes of cloud removal
-(the silver and gray lines) the green fit line does an excellent job of tracking the output.
+373W (its a 430W STC/327W NMOT panel and I'm in the SFBay area).  I lost <1% due to shaving on this inverter on this day.  
+After two passes of cloud removal (the silver and gray lines) the green fit line does an excellent job of tracking the output.
 
 NOTE: depending on your PlotType and PlotLimit criteria, you may get many plots.  After viewing (or saving) a plot, just press 
 **q** or close the window and the next plot will appear.  If you have too many plots go to the output window and press CTRL-C
 and it will stop (though you may have to move your cursor to the current plot first).
+
+The program can produce a line for each day-inverter by setting the Detail flag to True.  It also produces a summary:
+```
+Processed 102 days of data for 44.0 inverters with a total output of 9,454,863.38Whr.
+Average generated power per day: 92694.74Whr (2,106.70Whr per inverter)
+Maximum inverter power: 2,994.13Whr (by SN542341021944 on 2025-05-22)
+Total exceedance power: 12,203.96Whr
+Maximum exceedance power: 35.26Whr (by SN542341021917 on 2025-05-22)
+Total shaved power: 1,217.51Whr
+Maximum shaved power: 17.58Whr (by SN542341021158 on 2025-04-12)
+Shave ratio: 0.01% (total shaved power / total generated power)
+```
+
 
 This program would not be possible without Matthew1471's Enphase-API (https://github.com/Matthew1471/Enphase-API).  Thanks alot Matthew - stellar work!
