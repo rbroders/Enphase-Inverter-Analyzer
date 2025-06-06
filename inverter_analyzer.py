@@ -349,6 +349,7 @@ def main():
     general_group.add_argument('/EndDate', '-EndDate', '--EndDate', dest='end_date', default=datetime.date(datetime.MAXYEAR, 12, 31), type=validate_date, help='The date to end the report at (defaults to 9999-12-31).')
     general_group.add_argument('/PlotMode', '-PlotMode', '--PlotMode', dest='plot_mode', default=PlotMode.NONE, type=PlotMode.from_string, choices=list(PlotMode), help='What data sets to plot (defaults to "NONE").')
     general_group.add_argument('/PlotLimit', '-PlotLimit', '--PlotLimit', dest='plot_limit', default=0, type=float, help='Plot data set limit (WHr; defaults to "0").')
+    general_group.add_argument('/Detail', '-Detail', '--Detail', dest='detail', default=False, type=bool, help='Report daily inverter details (defaults to False).')
 
     # We want this to appear last in the argument usage list.
     general_group.add_argument('/?', '/Help', '/help', '-h','--help','-help', action='help', help='Show this help message and exit.')
@@ -376,22 +377,68 @@ def main():
         global GET_INVERTER_PRODUCTION_SQL
         GET_INVERTER_PRODUCTION_SQL = GET_INVERTER_PRODUCTION_SQL.replace('?', '%s') # MySQL®/MariaDB® uses %s for parameters, SQLite uses ?
 
+    days: int = 0
+    inverter_days: int = 0
+    total_generated_power: int = 0
+    max_generated_power: int = 0
+    max_generated_power_inverter: int = 0 # The serial number of the inverter with the maximum generated power
+    max_generated_power_day: datetime.date = datetime.date(datetime.MINYEAR, 1, 1) # The day with the maximum generated power
+    total_exceedance_power: int = 0
+    max_exceedance_power: int = 0
+    max_exceedance_power_inverter: int = 0 # The serial number of the inverter with the maximum exceedance power
+    max_exceedance_power_day: datetime.date = datetime.date(datetime.MINYEAR, 1, 1) # The day with the maximum exceedance power
+    total_shaved_power: int = 0
+    max_shaved_power: int = 0
+    max_shaved_power_inverter: int = 0 # The serial number of the inverter with the maximum shaved power
+    max_shaved_power_day: datetime.date = datetime.date(datetime.MINYEAR, 1, 1) # The day with the maximum shaved power
+
     # Start the generator to get the inverter production from the database
     results: Iterator[tuple[datetime.date, dict[int, list[tuple[int, int]]]]] = get_results_from_database(database_cursor, args.start_date, args.end_date)
 
+    day: datetime.date
+    inverter_data: dict[int, list[tuple[int, int]]] # The data for each inverter for the day
     for day, inverter_data in results: # For each day of data
+        days += 1
         for serial_number, data in inverter_data.items(): # For each serial number of data
+            inverter_days += 1
             result = analyze_day(day, serial_number, args.max_continuous, data, args.plot_mode, args.plot_limit * 3600) # Analyze the day
-            print(f'{day} SN{serial_number} {result[0] / 3600.0:.2f}Whr generated', end='')
+            total_generated_power += result[0]
+            if result[0] > max_generated_power:
+                max_generated_power = result[0]
+                max_generated_power_inverter = serial_number
+                max_generated_power_day = day
+            if args.detail:
+                print(f'{day} SN{serial_number} {result[0] / 3600.0:.2f}Whr generated', end='')
             if result[1] is not None:
-                print(f', {result[1] / 3600.0:.2f}Whr exceedance', end='')
+                total_exceedance_power += result[1]
+                if result[1] > max_exceedance_power:
+                    max_exceedance_power = result[1]
+                    max_exceedance_power_inverter = serial_number
+                    max_exceedance_power_day = day
+                if args.detail:
+                    print(f', {result[1] / 3600.0:.2f}Whr exceedance', end='')
             if result[2] is not None:
-                print(f', {result[2] / 3600.0:.2f}Whr shaved', end='')
-            print('')
+                total_shaved_power += result[2]
+                if result[2] > max_shaved_power:
+                    max_shaved_power = result[2]
+                    max_shaved_power_inverter = serial_number
+                    max_shaved_power_day = day
+                if args.detail:
+                    print(f', {result[2] / 3600.0:.2f}Whr shaved', end='')
+            if args.detail:
+                print('')
 
     # Close the database connection (now that results iterator is exhausted).
     database_connection.close()
 
+    print(f'Processed {days} days of data for {inverter_days/days} inverters with a total output of {total_generated_power / 3600.0:,.2f}Whr.')
+    print(f'Average generated power per day: {total_generated_power / days / 3600.0:.2f}Whr ({total_generated_power / inverter_days / 3600.0:,.2f}Whr per inverter)')
+    print(f'Maximum inverter power: {max_generated_power / 3600.0:,.2f}Whr (by SN{max_generated_power_inverter} on {max_generated_power_day})')
+    print(f'Total exceedance power: {total_exceedance_power / 3600.0:,.2f}Whr')
+    print(f'Maximum exceedance power: {max_exceedance_power / 3600.0:,.2f}Whr (by SN{max_exceedance_power_inverter} on {max_exceedance_power_day})')
+    print(f'Total shaved power: {total_shaved_power / 3600.0:,.2f}Whr')
+    print(f'Maximum shaved power: {max_shaved_power / 3600.0:,.2f}Whr (by SN{max_shaved_power_inverter} on {max_shaved_power_day})')
+    print(f'Shave ratio: {total_shaved_power / total_generated_power:.2%} (total shaved power / total generated power)')
 # Launch the main method if invoked directly.
 if __name__ == '__main__':
     main()
