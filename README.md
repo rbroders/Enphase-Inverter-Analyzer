@@ -35,9 +35,9 @@ This will populate the "Select Gateway" drop down, so use the dropdown (**v**) a
 Now you can press "Create access token", and your access token will appear on the next page.  Copy it into 
 credentials.json.
 
-You can also use it to access your gateway's built-in web-page.  You will have to skip past your
+You can also use the token to access your gateway's built-in web-page: https://envoy.local.  You will have to skip past your
 browser's security warnings and the gateway's "Sorry you are not authorized to view that page" message, but then
-you can paste in the token and access the meager web-site. It is useful for setting up a Static IP address though.
+you can paste in the token and access the meager web-site. It is useful for setting up a Static IP address.
 I think the token only lasts for a year, so we may have to repeat this process periodically.
 
 You can also enter MySQ/MariaDB database parameters in your credentials file instead of using command line.
