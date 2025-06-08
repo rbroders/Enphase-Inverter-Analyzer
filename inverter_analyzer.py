@@ -432,7 +432,7 @@ def main():
     database_connection.close()
 
     print(f'Processed {days} days of data for {inverter_days/days} inverters with a total output of {total_generated_power / 3600.0:,.2f}Whr.')
-    print(f'Average generated power per day: {total_generated_power / days / 3600.0:.2f}Whr ({total_generated_power / inverter_days / 3600.0:,.2f}Whr per inverter)')
+    print(f'Average generated power per day: {total_generated_power / days / 3600.0:,.2f}Whr ({total_generated_power / inverter_days / 3600.0:,.2f}Whr per inverter)')
     print(f'Maximum inverter power: {max_generated_power / 3600.0:,.2f}Whr (by SN{max_generated_power_inverter} on {max_generated_power_day})')
     print(f'Total exceedance power: {total_exceedance_power / 3600.0:,.2f}Whr')
     print(f'Maximum exceedance power: {max_exceedance_power / 3600.0:,.2f}Whr (by SN{max_exceedance_power_inverter} on {max_exceedance_power_day})')
