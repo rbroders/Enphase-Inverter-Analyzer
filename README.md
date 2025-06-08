@@ -33,10 +33,13 @@ My system name is my first and last name.  Its important to let the entrez web-p
 and click on the drop down box when it appears with your site name and serial number.
 This will populate the "Select Gateway" drop down, so use the dropdown (**v**) and select your gateway serial number from it.  
 Now you can press "Create access token", and your access token will appear on the next page.  Copy it into 
-credentials.json.  You can also use it to access your gateway's built-in web-page.  You will have to skip past your
+credentials.json.
+
+You can also use it to access your gateway's built-in web-page.  You will have to skip past your
 browser's security warnings and the gateway's "Sorry you are not authorized to view that page" message, but then
 you can paste in the token and access the meager web-site. It is useful for setting up a Static IP address though.
 I think the token only lasts for a year, so we may have to repeat this process periodically.
+
 You can also enter MySQ/MariaDB database parameters in your credentials file instead of using command line.
 
 # inverter_capture.py
@@ -114,7 +117,7 @@ As you can see, this particular panel is shaded in the early morning, but it com
 After two passes of cloud removal (the silver and gray lines) the green fit line does an excellent job of tracking the output.
 
 NOTE: depending on your PlotType and PlotLimit criteria, you may get many plots.  After viewing (or saving) a plot, just press 
-**q** or click close window control and the next plot will appear.  If you have too many plots go to the output window and press CTRL-C
+**q** or click the close window control and the next plot will appear.  If you have too many plots go to the python cmd window and press CTRL-C
 and it will stop (though you may have to move your cursor to the current plot first).  Using -PlotMode SHAVED -PlotLimit 10 will only 
 plot inverter-days that shave at least 10WHrs of energy.  Use -help to see all available arguments.
 
