@@ -98,10 +98,11 @@ To be successful, data for an inverter-day is eliminated if it does not meet the
 MAX_START_POWER < 20 and MIN_END_POWER = 0 and at least 50 data points (daily data must be complete).
 All data below 75W is ignored as the trail-in and trail-out data is not very parabolic.
 All data above the MAX_CONTINUOUS parameter is also ignored as the true output could be higher.
-Then the system fits a "cloud limit" parabola to the data and looks for power drop-outs (sudden decrease of 5W or more).
+Then the system fits a "cloud limit" parabola to the data and looks for power drop-outs (5W or more below expected output).
 These "cloudy" points are ignored and a "cloud limit 2" parabola is fitted to the remaining data.  
-The second set of cloudy points is ignored and a final parabola is fitted to the data.  NOTE: amazingly, 
-many of the original "cloudy" points are restored as the new parabolas do a better job of fitting the true data.
+The second set of cloudy points is ignored and a final parabola is fitted to the data.
+Amazingly, many of the original "cloudy" points are restored as the new parabolas do a better job of fitting the true data.
+The number in parenthesis in the legend shows how many "cloudy" points are under each parabola.
 
 Once this is complete, the EXCEEDANCE energy is calculated.  EXCEEDANCE energy is the power generated beyond
 MAX_CONTINUOUS (integrated over time).  My system has IQ8A inverters with a MAX_CONTINUOUS rating of 349W, 
@@ -115,7 +116,7 @@ In addition to the report, you can also view the plotted output by selecting the
 ![Plot](Example.png)
 As you can see, this particular panel is shaded in the early morning, but it comes on strong with an estimated peak power of
 373W (its a 430W STC/327W NMOT panel in the SFBay area).  It lost <1% due to shaving on this day.  
-After two passes of cloud removal (the silver and gray lines) the green fit line does an excellent job of tracking the output.
+After two passes of cloud removal (the silver and gray lines) the green Best Fit line does an excellent job of tracking the output.
 
 NOTE: depending on your PlotType and PlotLimit criteria, you may get many plots.  After viewing (or saving) a plot, just press 
 **q** or click the close window control and the next plot will appear.  If you have too many plots go to the python cmd window and press CTRL-C
