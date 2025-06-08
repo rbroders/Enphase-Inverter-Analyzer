@@ -30,7 +30,7 @@ To connect to your Enphase Gateway, you will need to edit credentials.json.  Spe
 NOTE: the [entrez web-site](https://entrez.enphaseenergy.com/) can be finicky.  After logging in it will ask you to "Select System".  
 This is your system name which can be found above Site ID in the upper left of the ENPHASE app's MENU tab.  
 My system name is my first and last name.  Its important to let the entrez web-page auto-complete your system name, so type slowly,
-and click on the drop down box when it appears with your site name and serial number.
+and click on the drop down box when it appears with your site name and site id.
 This will populate the "Select Gateway" drop down, so use the dropdown (**v**) and select your gateway serial number from it.  
 Now you can press "Create access token", and your access token will appear on the next page.  Copy it into 
 credentials.json.
