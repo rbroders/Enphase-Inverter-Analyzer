@@ -95,20 +95,21 @@ Once the capture utility has been running for a complete day (sun-up to sun-down
 This program analyzes the inverter output and produces a report with a line for each inverter every day (-Detail True).
 It does this by attempting to map a parabola to the non-exceedance inverter output (i.e. output less than max continuous).
 To be successful, data for an inverter-day is eliminated if it does not meet the following criteria: 
-MAX_START_POWER < 20 and MIN_END_POWER = 0 and at least 50 data points (make sure the daily data is complete).
+MAX_START_POWER < 20 and MIN_END_POWER = 0 and at least 50 data points (daily data must be complete).
 All data below 75W is ignored as the trail-in and trail-out data is not very parabolic.
 All data above the MAX_CONTINUOUS parameter is also ignored as the true output could be higher.
-Then the system fits a parabola to the data and looks for cloud drop-outs (sudden decrease of 5W or more).
-The cloud points are ignored and a new cloud parabola is fitted to the remaining data.  
-New cloud points are generated and a final parabola is fitted to the data.
+Then the system fits a "cloud limit" parabola to the data and looks for power drop-outs (sudden decrease of 5W or more).
+These "cloudy" points are ignored and a "cloud limit 2" parabola is fitted to the remaining data.  
+The second set of cloudy points is ignored and a final parabola is fitted to the data.  NOTE: amazingly, 
+many of the original "cloudy" points are restored as the new parabolas do a better job of fitting the true data.
 
 Once this is complete, the EXCEEDANCE energy is calculated.  EXCEEDANCE energy is the power generated beyond
 MAX_CONTINUOUS (integrated over time).  My system has IQ8A inverters with a MAX_CONTINUOUS rating of 349W, 
 but their PEAK rating is 366.  I've been capturing 44 inverters for ~100days and have seen 366W only 9 times.
-I have 27,2230 data points over 349W though (out of 500,000 so about 5.5%).
+I have many exceedance data points though, so the inverters do better than spec (27,2230 of 500,000 data points are over 349W - about 5.5%).
 I also calculate the estimated peak power output from the parabola, and the SHAVED energy, which is the difference between 
 the estimated power and the generated power (integrated over time).  This gives you an idea of how much energy 
-is lost by the undersized inverters.
+is lost due to undersized inverters.
 
 In addition to the report, you can also view the plotted output by selecting the -PlotType parameter.  Here is an example:
 ![Plot](Example.png)
