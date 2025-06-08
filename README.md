@@ -107,7 +107,7 @@ The number in parenthesis in the legend shows how many "cloudy" points are under
 Once this is complete, the EXCEEDANCE energy is calculated.  EXCEEDANCE energy is the power generated beyond
 MAX_CONTINUOUS (integrated over time).  My system has IQ8A inverters with a MAX_CONTINUOUS rating of 349W, 
 but their PEAK rating is 366.  I've been capturing 44 inverters for ~100days and have seen 366W only 9 times.
-I have many exceedance data points though, so the inverters do better than spec (27,2230 of 500,000 data points are over 349W - about 5.5%).
+I have many exceedance data points though, so the inverters do better than spec (27,2230 of 500,000 data points are over 349W).
 I also calculate the estimated peak power output from the parabola, and the SHAVED energy, which is the difference between 
 the estimated power and the generated power (integrated over time).  This gives you an idea of how much energy 
 is lost due to undersized inverters.
@@ -127,7 +127,7 @@ The program also produces a summary:
 ```console
 python inverter_analyzer.py -MaxContinuous 349 -DBHost NAS2 -DBPort 3307 -DBUsername enphase -DBPassword redacted -DBDatabase Enphase 2> report.err
 Processed 102 days of data for 44.0 inverters with a total output of 9,454,863.38Whr.
-Average generated power per day: 92694.74Whr (2,106.70Whr per inverter)
+Average generated power per day: 92,694.74Whr (2,106.70Whr per inverter)
 Maximum inverter power: 2,994.13Whr (by SN542341021944 on 2025-05-22)
 Total exceedance power: 12,203.96Whr
 Maximum exceedance power: 35.26Whr (by SN542341021917 on 2025-05-22)
