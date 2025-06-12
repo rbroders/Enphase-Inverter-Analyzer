@@ -35,7 +35,10 @@ This will populate the "Select Gateway" drop down, so use the dropdown (**v**) a
 Now you can press **Create access token**, and your access token will appear on the next page.  Press the **Copy and close** button, and then paste into credentials.json just like you did with the serial number (keep the **"**).
 
 ```
-As an aside, you can also use the token to access your gateway's built-in web-page: https://envoy.local.  You will have to skip past your browser's security warnings and the gateway's "Sorry you are not authorized to view that page" message, but then you can paste in the token and access the meager web-site. It is useful for setting up a Static IP address and checking software version numbers.
+As an aside, you can also use the token to access your gateway's built-in web-page: https://envoy.local.  
+You will have to skip past your browser's security warnings and the gateway's 
+"Sorry you are not authorized to view that page" message, but then you can paste in the token and access 
+the meager web-site. It is useful for setting up a Static IP address and checking software version numbers.
 ```
 
 I think the token only lasts for a year, so we may have to repeat this process periodically.
@@ -57,7 +60,7 @@ run using SQLite which has no security and setup is completely automatic (includ
 If you are using windows make sure to modify your Power & Sleep settings so your system **Never** sleeps.
 The program is designed to recover gracefully, so restarting within a few (5) minutes will not result in data loss.
 
-Create a command prompt window by typing ``command<enter>`` in the windows search box.  Change directory to the location of your python and credentials.json files.  Type ``python inverter_capture.py -DBFile inverters.db<enter>``
+Create a command prompt window by typing ``command<enter>`` in the windows search box.  Change directory to the location of your python and credentials.json files.  Start the program by typing ``python inverter_capture.py -DBFile inverters.db<enter>``
 
 Do not shutdown this window (iconifying is ok).  You should see output like this:
 
