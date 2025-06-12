@@ -1,70 +1,65 @@
 # Enphase-Inverter-Analyzer
 This utility stores individual inverter output in a database and analyzes it to look for power shaving losses.
 
-It is made up of two parts: inverter_capture.py runs continuously (especially during the light), capturing
-local inverter production data and storing it in a database, and inverter_analyzer.py which can be run to analyze
-the database data to help determine if the inverters are undersized.  This package supports MySQL/MariaDB as 
-well as sqlite.
+It is made up of two parts:
+1. **inverter_capture.py** runs continuously (especially during the light), captures
+local inverter production data and stories it in a external MySQL/MariaDB or an internal sqlite database.
+2. **inverter_analyzer.py** run periodically to analyze the database data to help determine if the inverters are undersized.
 
 This program would not be possible without Matthew1471's [Enphase-API](https://github.com/Matthew1471/Enphase-API).
 Thanks a lot Matthew - stellar work!
 
 # Installation
-Install python.  Using the windows store is easiest.
-Verify version with `python --version`
-I am not certion the minimum python version required.  It was developed with 3.13.1.  I capture from my QNAP NAS on 3.12.6.
+Install python 3.13 or later.  On windows you can use the store.  Also: https://www.python.org/
 
-Install specialized packages:
+The next steps require a windows command prompt.  Type `command<enter>` in the search window to create one.
+
+Verify version with `python --version` (should return Python 3.13.1)
+
+Install specialized python packages with the following four commands (should print several lines):
 ```
 python -m pip install requests
 python -m pip install enphase_api
 python -m pip install numpy
 python -m pip install matplotlib
 ```
-If you intend to use a MySQL/MariaDB you will also need to install mysql-connector-python.
+If you intend to use an external MySQL/MariaDB you will also need to install the mysql-connector-python package.  I assume MySQL/MariaDB users know what they are doing and this document will be focused on sqlite users.
 
-Download `inverter_capture.py credentials.json and inverter_analyzer.py` from this git to a directory somewhere.
-To connect to your Enphase Gateway, you will need to edit credentials.json.  Specifically you need a token:
+Next create a directory for your project and download the following three files (the download button is on the top right of the word "raw"):
+1. [credentials.json](https://github.com/rbroders/Enphase-Inverter-Analyzer/blob/main/credentials.json)
+2. [inverter_capture.py](https://github.com/rbroders/Enphase-Inverter-Analyzer/blob/main/inverter_capture.py)
+3. [inverter_analyzer.py](https://github.com/rbroders/Enphase-Inverter-Analyzer/blob/main/inverter_analyzer.py)
+
+Once the files have been downloaded to your directory, you will need to edit credentials.json in order to connect to your Enphase Gateway.  From your command window, type: ``notepad credentials.json``.  The three lines starting with **gateway_** need to be edited for your system.  You can leave host set to envoy.local, but you need to get your serial_number and token here: [entrez.enphaseenergy.com](https://entrez.enphaseenergy.com/).  After logging in it will ask you to "Select System".  Your system name can be found above Site ID in the upper left of the ENPHASE app's MENU tab (typically your first and last name).  Its important to let the entrez web-page auto-complete your system name, so type slowly towards the end of the name, and click on the drop down box when it appears with your site name and site id.
+This will populate the "Select Gateway" drop down, so use the dropdown (**v**) and select your gateway serial number from it.  Type this serial number into credentials.json (keep the **"** but replace <get from_https://entres.enphaseenergy.com> with your serial number).
+Now you can press **Create access token**, and your access token will appear on the next page.  Press the **Copy and close** button, and then paste into credentials.json just like you did with the serial number (keep the **"**).
+
+```
+As an aside, you can also use the token to access your gateway's built-in web-page: https://envoy.local.  You will have to skip past your browser's security warnings and the gateway's "Sorry you are not authorized to view that page" message, but then you can paste in the token and access the meager web-site. It is useful for setting up a Static IP address and checking software version numbers.
+```
+
+I think the token only lasts for a year, so we may have to repeat this process periodically.
+This document has more information, if you are curious:
 [enphase local api](https://enphase.com/download/accessing-iq-gateway-local-apis-or-local-ui-token-based-authentication)
 
-NOTE: the [entrez web-site](https://entrez.enphaseenergy.com/) can be finicky.  After logging in it will ask you to "Select System".  
-This is your system name which can be found above Site ID in the upper left of the ENPHASE app's MENU tab.  
-My system name is my first and last name.  Its important to let the entrez web-page auto-complete your system name, so type slowly,
-and click on the drop down box when it appears with your site name and site id.
-This will populate the "Select Gateway" drop down, so use the dropdown (**v**) and select your gateway serial number from it.  
-Now you can press "Create access token", and your access token will appear on the next page.  Copy it into 
-credentials.json.
 
-You can also use the token to access your gateway's built-in web-page: https://envoy.local.  You will have to skip past your
-browser's security warnings and the gateway's "Sorry you are not authorized to view that page" message, but then
-you can paste in the token and access the meager web-site. It is useful for setting up a Static IP address.
-I think the token only lasts for a year, so we may have to repeat this process periodically.
-
-You can also enter MySQ/MariaDB database parameters in your credentials file instead of using command line.
+You can also enter MySQ/MariaDB database parameters in the **database_** section of the credentials file instead of using command line parameters.
 
 # inverter_capture.py
 The inverter_capture utility connects to your local enphase gateway and uses the 
 [/api/v1/production/inverters](https://github.com/Matthew1471/Enphase-API/blob/main/Documentation/IQ%20Gateway%20API/V1/Production/Inverters.adoc)
-endpoint to capture inverter data.  Helpfully, the inverters timestamp their readings so I don't have to store
-repeat readings.  When the gateway is queried, it sends the most recent inverter data it has received.  
-Inverter_capture tracks the messages and ignores resends.  A message containing nothing but resends is called stale.
-At night the inverters stop updating their output, so all messages become stale.  I also ignore duplicate readings 
-in an attempt to reduce database space (the analyze program regenerates them to recreate smooth data).
+endpoint to capture inverter data and store it in a database.
 
 The inverter_capture.py utility must run continuously while the inverters are producing power to track their output.
 I run mine on a QNAP NAS with a MariaDB, but the setup was complicated and annoying.  It is also possible to 
-run using SQLite which has no security and setup is completely automatic (including schema).  Also, the SQLite database operates
-in WAL mode, so all access must be from the same computer.  This is needed because the analysis tool has a long
-running QUERY and in rollback journal mode this causes writer starvation, blocking the capture utility.
-
-Command line arguments control database connection and poll frequency (use -help).  My inverters send new data
-every 331 seconds, so the default poll interval is 60 seconds.  Progress is logged to stdout every 5 minutes
-and errors are sent to stderr.  The program is designed to run continuously so it captures all signals and
-attempts to restart itself if something goes wrong with the gateway or the database.  The program may take
-up to 1 minute to exit cleanly after pressing Ctrl-C.
+run using SQLite which has no security and setup is completely automatic (including schema).  
 
 If you are using windows make sure to modify your Power & Sleep settings so your system **Never** sleeps.
 The program is designed to recover gracefully, so restarting within a few (5) minutes will not result in data loss.
+
+Create a command prompt window by typing ``command<enter>`` in the windows search box.  Change directory to the location of your python and credentials.json files.  Type ``python inverter_capture.py -DBFile inverters.db<enter>``
+
+Do not shutdown this window (iconifying is ok).  You should see output like this:
 
 ```console
 python inverter_capture.py -DBFile inverters.db
@@ -123,7 +118,7 @@ NOTE: depending on your PlotType and PlotLimit criteria, you may get many plots.
 and it will stop (though you may have to move your cursor to the current plot first).  Using -PlotMode SHAVED -PlotLimit 10 will only 
 plot inverter-days that shave at least 10WHrs of energy.  Use -help to see all available arguments.
 
-The program also produces a summary:
+The command console program also produces a summary:
 ```console
 python inverter_analyzer.py -MaxContinuous 349 -DBHost NAS2 -DBPort 3307 -DBUsername enphase -DBPassword redacted -DBDatabase Enphase 2> report.err
 Processed 102 days of data for 44.0 inverters with a total output of 9,454,863.38Whr.
