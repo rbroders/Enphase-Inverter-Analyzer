@@ -36,6 +36,7 @@ import datetime
 from enum import IntEnum, auto
 from typing import Iterator
 import argparse # We support command line arguments.
+import json     # Used to load the credentials file
 from urllib.parse import ParseResult, urlunparse
 import sqlite3
 try:
@@ -48,6 +49,7 @@ import numpy as np # Third party library; "pip install numpy"
 import matplotlib.pyplot as plt # Third party library; "pip install matplotlib"
 
 INVERTER_DATA_DELTA_SECS: int = 331 # The time between data points.
+CREDENTIALS_FILE: str = 'credentials.json'
 
 class PlotMode(IntEnum): # IntEnum used for relative comparison of enum members
     """Enum for plot modes."""
@@ -357,6 +359,21 @@ def main():
     # Handle any command line arguments.
     args: argparse.Namespace = parser.parse_args()
 
+    # Load credentials.
+    credentials: dict[str, str] = {}
+    try:
+        with open(CREDENTIALS_FILE, mode='r', encoding='utf-8') as json_file:
+            credentials: dict[str, str] = json.load(json_file)
+        print(f'{datetime.datetime.now()} Loaded {CREDENTIALS_FILE}', file=sys.stderr, flush=True)
+    except FileNotFoundError:
+        pass # No credentials file, we will use defaults
+
+    database_host = args.database_host if args.database_host else credentials.get('database_host', 'localhost')
+    database_port = args.database_port if args.database_port else credentials.get('database_port', 3306)
+    database_username = args.database_username if args.database_username else credentials.get('database_username', 'root')
+    database_password = args.database_password if args.database_password else credentials.get('database_password', '')
+    database_database = args.database_database if args.database_database else credentials.get('database_database', 'Enphase')
+
     if args.database_file: # if we have a database file, use SQLite
         sqlite3.register_adapter(datetime.datetime, lambda dt: dt.strftime('%Y-%m-%d %H:%M:%S')) # register the datetime adapter
         sqlite3.register_converter('timestamp', lambda ts: datetime.datetime.strptime(ts.decode('utf-8'), '%Y-%m-%d %H:%M:%S')) # register the timestamp converter
@@ -365,12 +382,12 @@ def main():
         database_cursor = database_connection.cursor() # type: ignore # get a cursor to the database
         print(f'{datetime.datetime.now()} Connected to SQLite database {args.database_file} (version {sqlite3.sqlite_version}).', flush=True)
     else: # Connect to the MySQL®/MariaDB® database
-        database_connection = mysql.connector.connect(user=args.database_username, # type: ignore
-                                                      password=args.database_password,
-                                                      host=args.database_host,
-                                                      port=args.database_port,
-                                                      database=args.database_database)
-        print(f'{datetime.datetime.now()} Connected to database {args.database_database} on {args.database_host}:{args.database_port} as {args.database_username} (version {database_connection.get_server_info()}).', file=sys.stderr, flush=True)
+        database_connection = mysql.connector.connect(user=database_username, # type: ignore
+                                                      password=database_password,
+                                                      host=database_host,
+                                                      port=database_port,
+                                                      database=database_database)
+        print(f'{datetime.datetime.now()} Connected to database {database_database} on {database_host}:{database_port} as {database_username} (version {database_connection.get_server_info()}).', file=sys.stderr, flush=True)
         # database_connection.start_transaction(readonly=True) # Throws ValueError MySQL server version (5, 5, 5) does not support this feature
         # Get the database cursor we will use generator to get lots of data so we do not want buffered cursor
         database_cursor: mysql.connector.cursor.MySQLCursor = database_connection.cursor(buffered=False) # type: ignore
